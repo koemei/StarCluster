@@ -238,9 +238,11 @@ class SGEStats(object):
             if q.startswith('all.q@'):
                 single = self.queues.get(q).get('slots')
                 break
-        if (total != (single * len(self.hosts))):
-            raise exception.BaseException(
-                "ERROR: Number of slots not consistent across cluster")
+        # Commented by Evgeny
+        # @see https://github.com/jtriley/StarCluster/issues/362
+        # if (total != (single * len(self.hosts))):
+            # raise exception.BaseException(
+                # "ERROR: Number of slots not consistent across cluster")
         return single
 
     def oldest_queued_job_age(self):
@@ -263,6 +265,11 @@ class SGEStats(object):
         nodename = node.alias
         for j in self.jobs:
             qn = j.get('queue_name', '')
+            # Added by Evgeny, otherwise when qn is None
+            # "if ... in" below is broken
+            # it might be issue with python2.6
+            if qn is None:
+                qn = ''
             if nodename in qn:
                 log.debug("Node %s is working" % node.alias)
                 return True
